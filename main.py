@@ -2,8 +2,13 @@ import requests
 import time
 import json
 from typing import List, Dict
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Configuration
+GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
 
 HEADERS = {
     "Authorization": f"Bearer {GITHUB_TOKEN}",
