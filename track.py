@@ -244,7 +244,8 @@ def generate_emerging_report(emerging_repos: List[Dict], output_file: str = 'eme
         pitch += f"amazing growth! We help emerging open-source projects like yours get discovered by "
         pitch += f"more developers and potential sponsors. Would you be open to chatting about "
         pitch += f"growth opportunities?\n"
-        pitch += f"\n📊 Context: {details['description'][:100]}"
+        if details['description']:
+            pitch += f"\n📊 Context: {details['description'][:100]}"
         
         print(f"\n   💡 SALES PITCH:\n   {pitch}")
         
