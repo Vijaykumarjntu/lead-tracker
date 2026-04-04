@@ -1,0 +1,13 @@
+# render.yaml - Place this in your project root folder
+services:
+  - type: web
+    name: emerging-repos-api
+    runtime: python
+    repo: https://github.com/Vijaykumarjntu/lead-tracker
+    branch: main
+    buildCommand: pip install -r requirements_api.txt
+    startCommand: uvicorn api:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GITHUB_TOKEN
+        sync: false  # You'll add this manually in Render dashboard
+    plan: free  # Free tier
