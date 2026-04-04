@@ -12,14 +12,15 @@ For each repo in emerging_leads.json:
 import json
 import time
 import base64
+import os
 import requests
 from pathlib import Path
-from anthropic import Anthropic
+from openai import OpenAI
 from dotenv import load_dotenv
-import os
 load_dotenv()
+
 # ── Config ────────────────────────────────────────────────────────────────────
-GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
+GITHUB_TOKEN = "your_github_token_here"
 INPUT_FILE   = "emerging_leads.json"
 OUTPUT_FILE  = "flow_maps.json"
 MAX_REPOS    = None   # Set to an int like 10 to test on a subset, None = all
@@ -43,7 +44,10 @@ ALLOWED_EXTENSIONS = {".py", ".yaml", ".yml", ".toml", ".md"}
 # Max files to send Claude per repo
 MAX_FILES_TO_SEND = 7
 
-client = Anthropic()
+client = OpenAI(
+    api_key=os.getenv("XAI_API_KEY"),
+    base_url="https://api.x.ai/v1",
+)
 
 
 # ── GitHub helpers ────────────────────────────────────────────────────────────
@@ -170,13 +174,15 @@ def get_flow_map(repo: str, description: str, files: dict[str, str]) -> dict | N
     """Call Claude and return parsed flow map JSON."""
     prompt = build_user_prompt(repo, description, files)
     try:
-        response = client.messages.create(
-            model="claude-sonnet-4-20250514",
+        response = client.chat.completions.create(
+            model="grok-3-mini",
             max_tokens=2048,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user",   "content": prompt},
+            ],
         )
-        raw = response.content[0].text.strip()
+        raw = response.choices[0].message.content.strip()
         # Strip markdown fences if present
         if raw.startswith("```"):
             raw = raw.split("```")[1]
