@@ -3,3 +3,4 @@ influencers.json
 star_history.db
 *.json
 .env
+*.md
