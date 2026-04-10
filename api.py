@@ -1,19 +1,17 @@
-# api.py - FastAPI backend
+# api.py - Add these new endpoints
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 from typing import Optional, List
 import json
-from datetime import datetime
+from collections import defaultdict
 import os
 
 app = FastAPI(
     title="Emerging GitHub Repos API",
-    description="Find fast-growing, approachable GitHub repos before they become mainstream",
-    version="1.0.0"
+    description="Find fast-growing, approachable GitHub repos by language",
+    version="2.0.0"
 )
 
-# Enable CORS for anyone to use
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -21,201 +19,278 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Data models
-class RepoResponse(BaseModel):
-    rank: int
-    repo: str
-    owner: str
-    stars: int
-    stars_per_month: float
-    age_months: float
-    growth_score: float
-    description: str
-    repo_url: str
-    language: Optional[str]
-    influencer: str
-    influencer_followers: int
-    sales_pitch: str
-
-class FilterParams(BaseModel):
-    min_stars: Optional[int] = 50
-    max_stars: Optional[int] = 5000
-    min_growth_score: Optional[float] = 10
-    language: Optional[str] = None
-    limit: Optional[int] = 50
-
-# Load data
 def load_repos():
+    """Load emerging leads"""
     try:
-        with open('emerging_leads.json', 'r') as f:
+        with open('emerging_leads_with_languages.json', 'r', encoding='utf-8') as f:
             return json.load(f)
     except:
         return []
 
-def load_contacts():
-    try:
-        with open('owner_contacts.json', 'r') as f:
-            return json.load(f)
-    except:
-        return []
+def get_language_stats(repos):
+    """Get language distribution stats"""
+    stats = defaultdict(int)
+    for repo in repos:
+        lang = repo.get('language', 'Unknown')
+        stats[lang] += 1
+    return dict(sorted(stats.items(), key=lambda x: x[1], reverse=True))
 
 @app.get("/")
 def root():
+    repos = load_repos()
+    lang_stats = get_language_stats(repos)
+    
     return {
         "message": "Emerging GitHub Repos API",
-        "docs": "/docs",
-        "endpoints": [
-            "/repos/trending",
-            "/repos/beginner-friendly",
-            "/repos/by-language/{language}",
-            "/repos/{owner}/{repo}"
-        ]
+        "version": "2.0",
+        "total_repos": len(repos),
+        "languages_available": list(lang_stats.keys()),
+        "endpoints": {
+            "/repos/trending": "Get all trending repos",
+            "/repos/beginner-friendly": "Get beginner-friendly repos",
+            "/python": "Get Python repos only",
+            "/javascript": "Get JavaScript repos only", 
+            "/go": "Get Go repos only",
+            "/rust": "Get Rust repos only",
+            "/java": "Get Java repos only",
+            "/cpp": "Get C++ repos only",
+            "/language/{language}": "Get repos by specific language",
+            "/languages": "Get all languages and counts",
+            "/stats": "Get statistics"
+        }
     }
 
-@app.get("/repos/trending", response_model=List[RepoResponse])
+@app.get("/languages")
+def get_languages():
+    """Get all available languages with counts"""
+    repos = load_repos()
+    lang_stats = get_language_stats(repos)
+    
+    return {
+        "total_repos": len(repos),
+        "languages": lang_stats,
+        "top_5_languages": dict(list(lang_stats.items())[:5])
+    }
+
+@app.get("/python")
+def get_python_repos(limit: int = Query(50, ge=1, le=200)):
+    """Get Python repositories only"""
+    repos = load_repos()
+    
+    python_repos = [
+        repo for repo in repos 
+        if repo.get('language', '').lower() == 'python'
+    ]
+    
+    # Sort by growth score
+    python_repos.sort(key=lambda x: x.get('growth_score', 0), reverse=True)
+    
+    return {
+        "language": "Python",
+        "count": len(python_repos),
+        "repos": python_repos[:limit]
+    }
+
+@app.get("/javascript")
+def get_javascript_repos(limit: int = Query(50, ge=1, le=200)):
+    """Get JavaScript repositories only"""
+    repos = load_repos()
+    
+    js_repos = [
+        repo for repo in repos 
+        if repo.get('language', '').lower() in ['javascript', 'js', 'node']
+    ]
+    
+    js_repos.sort(key=lambda x: x.get('growth_score', 0), reverse=True)
+    
+    return {
+        "language": "JavaScript",
+        "count": len(js_repos),
+        "repos": js_repos[:limit]
+    }
+
+@app.get("/typescript")
+def get_typescript_repos(limit: int = Query(50, ge=1, le=200)):
+    """Get TypeScript repositories only"""
+    repos = load_repos()
+    
+    ts_repos = [
+        repo for repo in repos 
+        if repo.get('language', '').lower() in ['typescript', 'ts']
+    ]
+    
+    ts_repos.sort(key=lambda x: x.get('growth_score', 0), reverse=True)
+    
+    return {
+        "language": "TypeScript",
+        "count": len(ts_repos),
+        "repos": ts_repos[:limit]
+    }
+
+@app.get("/go")
+def get_go_repos(limit: int = Query(50, ge=1, le=200)):
+    """Get Go repositories only"""
+    repos = load_repos()
+    
+    go_repos = [
+        repo for repo in repos 
+        if repo.get('language', '').lower() in ['go', 'golang']
+    ]
+    
+    go_repos.sort(key=lambda x: x.get('growth_score', 0), reverse=True)
+    
+    return {
+        "language": "Go",
+        "count": len(go_repos),
+        "repos": go_repos[:limit]
+    }
+
+@app.get("/rust")
+def get_rust_repos(limit: int = Query(50, ge=1, le=200)):
+    """Get Rust repositories only"""
+    repos = load_repos()
+    
+    rust_repos = [
+        repo for repo in repos 
+        if repo.get('language', '').lower() == 'rust'
+    ]
+    
+    rust_repos.sort(key=lambda x: x.get('growth_score', 0), reverse=True)
+    
+    return {
+        "language": "Rust",
+        "count": len(rust_repos),
+        "repos": rust_repos[:limit]
+    }
+
+@app.get("/java")
+def get_java_repos(limit: int = Query(50, ge=1, le=200)):
+    """Get Java repositories only"""
+    repos = load_repos()
+    
+    java_repos = [
+        repo for repo in repos 
+        if repo.get('language', '').lower() == 'java'
+    ]
+    
+    java_repos.sort(key=lambda x: x.get('growth_score', 0), reverse=True)
+    
+    return {
+        "language": "Java",
+        "count": len(java_repos),
+        "repos": java_repos[:limit]
+    }
+
+@app.get("/cpp")
+def get_cpp_repos(limit: int = Query(50, ge=1, le=200)):
+    """Get C++ repositories only"""
+    repos = load_repos()
+    
+    cpp_repos = [
+        repo for repo in repos 
+        if repo.get('language', '').lower() in ['c++', 'cpp', 'c']
+    ]
+    
+    cpp_repos.sort(key=lambda x: x.get('growth_score', 0), reverse=True)
+    
+    return {
+        "language": "C/C++",
+        "count": len(cpp_repos),
+        "repos": cpp_repos[:limit]
+    }
+
+@app.get("/language/{language}")
+def get_by_language(
+    language: str,
+    limit: int = Query(50, ge=1, le=200)
+):
+    """Get repos by any language"""
+    repos = load_repos()
+    
+    filtered = [
+        repo for repo in repos 
+        if repo.get('language', '').lower() == language.lower()
+    ]
+    
+    if not filtered:
+        raise HTTPException(status_code=404, detail=f"No repos found for language: {language}")
+    
+    filtered.sort(key=lambda x: x.get('growth_score', 0), reverse=True)
+    
+    return {
+        "language": language,
+        "count": len(filtered),
+        "repos": filtered[:limit]
+    }
+
+@app.get("/repos/trending")
 def get_trending_repos(
     limit: int = Query(50, ge=1, le=200),
     min_stars: int = Query(50, ge=0, le=10000),
     max_stars: int = Query(5000, ge=0, le=50000),
-    min_growth: float = Query(10, ge=0, le=1000),
     language: Optional[str] = None
 ):
-    """Get emerging repos with growth potential"""
-    
+    """Get trending repos with filters"""
     repos = load_repos()
     
-    if not repos:
-        raise HTTPException(status_code=404, detail="No repos found")
-    
-    # Apply filters
     filtered = []
     for repo in repos:
-        if repo['stars'] < min_stars or repo['stars'] > max_stars:
-            continue
-        if repo.get('growth_score', 0) < min_growth:
+        if repo.get('stars', 0) < min_stars or repo.get('stars', 0) > max_stars:
             continue
         if language and repo.get('language', '').lower() != language.lower():
             continue
         filtered.append(repo)
     
-    # Sort by growth score
     filtered.sort(key=lambda x: x.get('growth_score', 0), reverse=True)
     
-    return filtered[:limit]
+    return {
+        "count": len(filtered[:limit]),
+        "filters": {
+            "min_stars": min_stars,
+            "max_stars": max_stars,
+            "language": language
+        },
+        "repos": filtered[:limit]
+    }
 
 @app.get("/repos/beginner-friendly")
-def get_beginner_friendly(
-    limit: int = Query(50, ge=1, le=100)
-):
-    """Find repos good for first-time contributors"""
-    
+def get_beginner_friendly(limit: int = Query(50, ge=1, le=100)):
+    """Get beginner-friendly repos"""
     repos = load_repos()
-    contacts = load_contacts()
-    
-    # Criteria for beginner-friendly:
-    # 1. Has good description
-    # 2. Owner has contact info (approachable)
-    # 3. Not too big (< 3000 stars)
-    # 4. Has growth momentum
     
     friendly = []
     for repo in repos:
-        if repo['stars'] > 3000:
+        if repo.get('stars', 0) > 3000:
             continue
         
-        # Find owner contact
-        owner_contact = next(
-            (c for c in contacts if c.get('username') == repo['owner']),
-            {}
-        )
-        
-        # Bonus if owner has Twitter or blog (approachable)
-        approachable_score = 0
-        if owner_contact.get('twitter'):
-            approachable_score += 20
-        if owner_contact.get('blog'):
-            approachable_score += 10
-        
-        total_score = repo.get('growth_score', 0) + approachable_score
+        score = repo.get('growth_score', 0)
+        if repo.get('description'):
+            score += 10
         
         friendly.append({
             **repo,
-            'approachable_score': approachable_score,
-            'total_score': total_score,
-            'owner_twitter': owner_contact.get('twitter'),
-            'owner_blog': owner_contact.get('blog')
+            'beginner_score': score
         })
     
-    friendly.sort(key=lambda x: x['total_score'], reverse=True)
-    
-    return friendly[:limit]
-
-@app.get("/repos/by-language/{language}")
-def get_by_language(
-    language: str,
-    limit: int = Query(50, ge=1, le=100)
-):
-    """Get trending repos by programming language"""
-    
-    repos = load_repos()
-    
-    filtered = [r for r in repos if r.get('language', '').lower() == language.lower()]
-    filtered.sort(key=lambda x: x.get('growth_score', 0), reverse=True)
-    
-    return filtered[:limit]
-
-@app.get("/repos/{owner}/{repo}")
-def get_repo_details(owner: str, repo: str):
-    """Get detailed info about a specific repo"""
-    
-    repos = load_repos()
-    contacts = load_contacts()
-    
-    # Find repo
-    repo_data = next(
-        (r for r in repos if r['owner'].lower() == owner.lower() and r['repo'].lower() == f"{owner}/{repo}".lower()),
-        None
-    )
-    
-    if not repo_data:
-        raise HTTPException(status_code=404, detail="Repo not found")
-    
-    # Find owner contact
-    owner_contact = next(
-        (c for c in contacts if c.get('username') == owner),
-        {}
-    )
+    friendly.sort(key=lambda x: x['beginner_score'], reverse=True)
     
     return {
-        'repo': repo_data,
-        'owner_contact': owner_contact,
-        'outreach_tips': {
-            'best_channel': 'Twitter DM' if owner_contact.get('twitter') else 'GitHub Issue',
-            'twitter': owner_contact.get('twitter'),
-            'suggested_message': repo_data.get('sales_pitch', 'Check out this growing project!')
-        }
+        "count": len(friendly[:limit]),
+        "repos": friendly[:limit]
     }
 
 @app.get("/stats")
 def get_stats():
-    """Get overall statistics"""
-    
+    """Get statistics"""
     repos = load_repos()
-    
-    if not repos:
-        return {"error": "No data"}
-    
-    languages = {}
-    for repo in repos:
-        lang = repo.get('language', 'Unknown')
-        languages[lang] = languages.get(lang, 0) + 1
+    lang_stats = get_language_stats(repos)
     
     return {
         'total_repos': len(repos),
-        'average_stars': sum(r['stars'] for r in repos) / len(repos),
-        'average_growth': sum(r.get('growth_score', 0) for r in repos) / len(repos),
-        'top_languages': sorted(languages.items(), key=lambda x: x[1], reverse=True)[:10],
-        'last_updated': datetime.now().isoformat()
+        'average_stars': sum(r.get('stars', 0) for r in repos) / len(repos) if repos else 0,
+        'average_growth': sum(r.get('growth_score', 0) for r in repos) / len(repos) if repos else 0,
+        'languages': lang_stats,
+        'top_languages': dict(list(lang_stats.items())[:5])
     }
 
 if __name__ == "__main__":
