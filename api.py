@@ -22,7 +22,7 @@ app.add_middleware(
 def load_repos():
     """Load emerging leads"""
     try:
-        with open('emerging_leads_with_languages.json', 'r', encoding='utf-8') as f:
+        with open('emerging_leads3_with_languages.json', 'r', encoding='utf-8') as f:
             return json.load(f)
     except:
         return []
