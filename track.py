@@ -150,11 +150,12 @@ def find_emerging_repos(influencers_file: str, target_count: int = 100):
     print("=" * 80)
     
     repo_candidates = {}
-    
-    for idx, influencer in enumerate(influencers[:50], 1):  # Start with 50 influencers
+    influencers_processed = 0
+
+    for idx, influencer in enumerate(influencers[:250], 1):  # Start with 50 influencers
         username = influencer['username']
-        print(f"\n{idx}/{len(influencers[:50])} 👤 @{username} (Followers: {influencer['followers']})")
-        
+        print(f"\n{idx}/{len(influencers[:250])} 👤 @{username} (Followers: {influencer['followers']})")
+        influencers_processed += 1
         # Get recent stars
         recent_stars = get_recent_stars(username, limit=20)
         
@@ -209,16 +210,21 @@ def find_emerging_repos(influencers_file: str, target_count: int = 100):
         
         time.sleep(0.5)
     
+    print("these are the influencers processed")
+    print(influencers_processed)
     # Convert to list and sort by growth score
     all_repos = list(repo_candidates.values())
     all_repos.sort(key=lambda x: x['growth_score'], reverse=True)
     
     # Take top N
-    top_emerging = all_repos[:target_count]
+    print("these are the repos we got and its length")
+    print(len(all_repos))
+    # top_emerging = all_repos[:target_count]
+    top_emerging = all_repos
     
     return top_emerging
 
-def generate_emerging_report(emerging_repos: List[Dict], output_file: str = 'emerging_leads.json'):
+def generate_emerging_report(emerging_repos: List[Dict], output_file: str = 'emerging_leads3.json'):
     """Generate report with sales pitches for emerging repos"""
     
     print("\n" + "=" * 80)
@@ -282,14 +288,14 @@ def main():
     print()
     
     # Find emerging repos
-    emerging = find_emerging_repos("influencers2.json", target_count=100)
+    emerging = find_emerging_repos("influencers1.json", target_count=250)
     
     if not emerging:
         print("❌ No emerging repos found! Try adjusting thresholds.")
         return
     
     # Generate report
-    leads = generate_emerging_report(emerging, "emerging_leads.json")
+    leads = generate_emerging_report(emerging, "emerging_leads3.json")
     
     print("\n🎯 Ready to reach out to owners of GROWING projects!")
 
