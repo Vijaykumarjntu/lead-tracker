@@ -152,9 +152,9 @@ def find_emerging_repos(influencers_file: str, target_count: int = 100):
     repo_candidates = {}
     influencers_processed = 0
 
-    for idx, influencer in enumerate(influencers[:250], 1):  # Start with 50 influencers
+    for idx, influencer in enumerate(influencers[:540], 1):  # Start with 50 influencers
         username = influencer['username']
-        print(f"\n{idx}/{len(influencers[:250])} 👤 @{username} (Followers: {influencer['followers']})")
+        print(f"\n{idx}/{len(influencers[:540])} 👤 @{username} (Followers: {influencer['followers']})")
         influencers_processed += 1
         # Get recent stars
         recent_stars = get_recent_stars(username, limit=20)
@@ -224,7 +224,7 @@ def find_emerging_repos(influencers_file: str, target_count: int = 100):
     
     return top_emerging
 
-def generate_emerging_report(emerging_repos: List[Dict], output_file: str = 'emerging_leads3.json'):
+def generate_emerging_report(emerging_repos: List[Dict], output_file: str = 'emerging_leads4.json'):
     """Generate report with sales pitches for emerging repos"""
     
     print("\n" + "=" * 80)
@@ -288,14 +288,14 @@ def main():
     print()
     
     # Find emerging repos
-    emerging = find_emerging_repos("influencers1.json", target_count=250)
+    emerging = find_emerging_repos("influencers.json", target_count=540)
     
     if not emerging:
         print("❌ No emerging repos found! Try adjusting thresholds.")
         return
     
     # Generate report
-    leads = generate_emerging_report(emerging, "emerging_leads3.json")
+    leads = generate_emerging_report(emerging, "emerging_leads4.json")
     
     print("\n🎯 Ready to reach out to owners of GROWING projects!")
 

@@ -272,7 +272,8 @@
         async function fetchRepos() {
             try {
                 // Try your deployed API first
-                const response = await fetch('https://emerging-repos-api.onrender.com/repos/trending?limit=100');
+                //const response = await fetch('https://emerging-repos-api.onrender.com/repos/trending?limit=100');
+                const response = await fetch('https://emerging-repos-api.onrender.com/');
                 if (response.ok) {
                     const data = await response.json();
                     allRepos = data.repos || data;
