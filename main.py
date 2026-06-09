@@ -3,7 +3,7 @@ import time
 import json
 from typing import List, Dict
 from dotenv import load_dotenv
-
+import os 
 # Load environment variables
 load_dotenv()
 
@@ -81,7 +81,7 @@ def filter_influencers(followers: List[Dict]) -> List[Dict]:
     
     return influencers
 
-def save_to_json(data: List[Dict], filename: str = 'influencers.json'):
+def save_to_json(data: List[Dict], filename: str = 'influencers_new.json'):
     """Save influencers to JSON file"""
     with open(filename, 'w') as f:
         json.dump(data, f, indent=2)
@@ -101,7 +101,7 @@ def main():
     influencers = filter_influencers(followers)
     
     # Step 3: Limit to top 100
-    top_100 = influencers
+    top_100 = influencers[:100]
     
     # Step 4: Save to file
     save_to_json(top_100)

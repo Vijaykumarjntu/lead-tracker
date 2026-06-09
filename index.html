@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emerging GitHub Repos - Find Fast-Growing Projects</title>
+    <title>Emerging GitHub Repos</title>
     <style>
         * {
             margin: 0;
@@ -12,221 +12,135 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
             padding: 20px;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
         /* Header */
         .header {
             text-align: center;
-            color: white;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
             margin-bottom: 30px;
         }
 
         .header h1 {
-            font-size: 2.5rem;
+            font-size: 2rem;
             margin-bottom: 10px;
         }
 
         .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
+            color: #aaa;
         }
 
-        .stats-badge {
-            display: inline-block;
-            background: rgba(255,255,255,0.2);
-            padding: 5px 15px;
-            border-radius: 20px;
-            margin-top: 10px;
-            font-size: 0.9rem;
+        /* Section Titles */
+        .section-title {
+            font-size: 1.5rem;
+            margin: 30px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #333;
         }
 
-        /* Filters */
-        .filters {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .filter-group {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .filter-group select, .filter-group input {
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .filter-group button {
-            padding: 10px 20px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .filter-group button:hover {
-            background: #5a67d8;
-        }
-
-        /* Language Chips */
-        .language-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .chip {
-            padding: 6px 15px;
-            border-radius: 20px;
-            background: #f0f0f0;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-
-        .chip:hover {
-            background: #e0e0e0;
-        }
-
-        .chip.active {
-            background: #667eea;
-            color: white;
+        .section-title span {
+            color: #4CAF50;
         }
 
         /* Repo Cards */
         .repos-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 20px;
         }
 
         .repo-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            transition: transform 0.3s, box-shadow 0.3s;
+            background: #1e1e2e;
+            border-radius: 12px;
+            padding: 18px;
+            transition: transform 0.2s;
             cursor: pointer;
+            border: 1px solid #2a2a3a;
         }
 
         .repo-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .repo-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 12px;
+            transform: translateY(-3px);
+            border-color: #4CAF50;
         }
 
         .repo-name {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
-            color: #333;
-            text-decoration: none;
+            color: #fff;
+            margin-bottom: 8px;
+            word-break: break-all;
         }
 
-        .repo-name:hover {
-            color: #667eea;
-        }
-
-        .language-badge {
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            background: #f0f0f0;
-        }
-
-        .language-badge.python { background: #3776AB; color: white; }
-        .language-badge.javascript { background: #F7DF1E; color: #333; }
-        .language-badge.typescript { background: #3178C6; color: white; }
-        .language-badge.go { background: #00ADD8; color: white; }
-        .language-badge.rust { background: #DEA584; color: white; }
-        .language-badge.java { background: #007396; color: white; }
-
-        .repo-description {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
-
-        .repo-stats {
+        .repo-meta {
             display: flex;
             gap: 15px;
-            margin-bottom: 15px;
-            font-size: 0.85rem;
+            margin-bottom: 10px;
+            font-size: 0.8rem;
         }
 
-        .stat {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: #666;
+        .language {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .lang-Python { background: #3776AB; }
+        .lang-JavaScript { background: #F7DF1E; color: #333; }
+        .lang-TypeScript { background: #3178C6; }
+        .lang-Go { background: #00ADD8; }
+        .lang-Rust { background: #DEA584; }
+        .lang-Unknown { background: #555; }
+
+        .stars {
+            color: #FFD700;
+        }
+
+        .growth {
+            color: #4CAF50;
+        }
+
+        .repo-desc {
+            color: #aaa;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin-bottom: 10px;
         }
 
         .influencer {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            margin-top: 10px;
+            font-size: 0.7rem;
+            color: #888;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #2a2a3a;
         }
 
-        .pitch {
-            background: #e8f4f8;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            margin-top: 10px;
-            color: #2c5282;
-        }
-
-        .loading {
+        .loading, .error {
             text-align: center;
-            color: white;
             padding: 50px;
-            font-size: 1.2rem;
         }
 
-        /* Footer */
+        .error {
+            color: #ff6b6b;
+        }
+
         .footer {
             text-align: center;
-            color: white;
             margin-top: 40px;
             padding: 20px;
-            opacity: 0.8;
-        }
-
-        @media (max-width: 768px) {
-            .repos-grid {
-                grid-template-columns: 1fr;
-            }
-            .header h1 {
-                font-size: 1.8rem;
-            }
+            color: #666;
+            font-size: 0.8rem;
         }
     </style>
 </head>
@@ -234,198 +148,107 @@
     <div class="container">
         <div class="header">
             <h1>🚀 Emerging GitHub Repos</h1>
-            <p>Discover fast-growing open-source projects before they go mainstream</p>
-            <div class="stats-badge" id="statsBadge">Loading stats...</div>
+            <p>Fast-growing open-source projects tracked by influencers</p>
         </div>
 
-        <div class="filters">
-            <div class="language-chips" id="languageChips">
-                <div class="chip active" data-lang="all">All</div>
-            </div>
-            
-            <div class="filter-group">
-                <select id="sortBy">
-                    <option value="growth">Highest Growth</option>
-                    <option value="stars">Most Stars</option>
-                    <option value="recent">Recently Added</option>
-                </select>
-                <input type="number" id="minStars" placeholder="Min stars" value="50" style="width: 100px;">
-                <input type="number" id="maxStars" placeholder="Max stars" value="5000" style="width: 100px;">
-                <button id="applyFilters">Apply Filters</button>
-            </div>
-        </div>
-
-        <div id="reposContainer" class="repos-grid">
-            <div class="loading">Loading amazing projects...</div>
+        <div id="content">
+            <div class="loading">Loading...</div>
         </div>
 
         <div class="footer">
-            🔍 Updated daily | 📊 Tracking emerging repos with high growth
+            🔍 Updated daily | Tracked via GitHub influencers
         </div>
     </div>
 
     <script>
-        let allRepos = [];
-        let currentLanguage = 'all';
+        // API endpoints
+        const API_URL = 'https://emerging-repos-api.onrender.com';
 
-        // Fetch data from your API
         async function fetchRepos() {
             try {
-                // Try your deployed API first
-                //const response = await fetch('https://emerging-repos-api.onrender.com/repos/trending?limit=100');
-                const response = await fetch('https://emerging-repos-api.onrender.com/');
-                if (response.ok) {
-                    const data = await response.json();
-                    allRepos = data.repos || data;
-                } else {
-                    // Fallback to local if API fails
-                    throw new Error('API failed');
+                // Fetch top 100 repos with stars < 2500
+                const response = await fetch(`${API_URL}/repos/trending?limit=100&max_stars=2500`);
+                
+                if (!response.ok) {
+                    throw new Error(`API returned ${response.status}`);
                 }
+                
+                const data = await response.json();
+                const repos = data.repos || data;
+                
+                renderRepos(repos);
+                
             } catch (error) {
-                console.log('Using sample data...');
-                // Sample data for demo
-                allRepos = getSampleData();
+                console.error('Error:', error);
+                document.getElementById('content').innerHTML = `
+                    <div class="error">
+                        ⚠️ Failed to load data. Make sure the API is running.<br>
+                        <small>${error.message}</small>
+                    </div>
+                `;
             }
-            
-            updateStats();
-            renderLanguageChips();
-            renderRepos();
         }
 
-        function getSampleData() {
-            return [
-                {
-                    repo: "HKUDS/OpenSpace",
-                    owner: "HKUDS",
-                    stars: 2718,
-                    stars_per_month: 2718,
-                    growth_score: 4077,
-                    language: "Python",
-                    description: "Make Your Agents: Smarter, Low-Cost, Self-Evolving",
-                    sales_pitch: "Your project is gaining amazing traction!",
-                    influencer: "tech_influencer",
-                    influencer_followers: 1065
-                },
-                {
-                    repo: "danveloper/flash-moe",
-                    owner: "danveloper",
-                    stars: 2271,
-                    stars_per_month: 2271,
-                    growth_score: 3406,
-                    language: "Go",
-                    description: "Running a big model on a small laptop",
-                    sales_pitch: "Incredible growth potential!",
-                    influencer: "go_expert",
-                    influencer_followers: 5000
-                },
-                {
-                    repo: "alvinunreal/awesome-opensource-ai",
-                    owner: "alvinunreal",
-                    stars: 2001,
-                    stars_per_month: 2001,
-                    growth_score: 3001,
-                    language: "TypeScript",
-                    description: "Curated list of open-source AI projects",
-                    sales_pitch: "Perfect for AI enthusiasts!",
-                    influencer: "ai_researcher",
-                    influencer_followers: 15000
-                }
-            ];
-        }
-
-        function updateStats() {
-            const languages = [...new Set(allRepos.map(r => r.language).filter(l => l))];
-            document.getElementById('statsBadge').innerHTML = `📊 ${allRepos.length} repos | ${languages.length} languages | 🚀 Tracking emerging projects`;
-        }
-
-        function renderLanguageChips() {
-            const languages = ['all', ...new Set(allRepos.map(r => r.language).filter(l => l))];
-            const chipsHtml = languages.map(lang => `
-                <div class="chip ${currentLanguage === lang ? 'active' : ''}" data-lang="${lang}">
-                    ${lang === 'all' ? 'All' : lang}
-                </div>
-            `).join('');
-            
-            document.getElementById('languageChips').innerHTML = chipsHtml;
-            
-            // Add click handlers
-            document.querySelectorAll('.chip').forEach(chip => {
-                chip.addEventListener('click', () => {
-                    currentLanguage = chip.dataset.lang;
-                    renderLanguageChips();
-                    renderRepos();
-                });
-            });
-        }
-
-        function renderRepos() {
-            let filtered = [...allRepos];
-            
-            // Filter by language
-            if (currentLanguage !== 'all') {
-                filtered = filtered.filter(r => r.language === currentLanguage);
-            }
-            
-            // Filter by stars
-            const minStars = parseInt(document.getElementById('minStars').value) || 0;
-            const maxStars = parseInt(document.getElementById('maxStars').value) || 50000;
-            filtered = filtered.filter(r => r.stars >= minStars && r.stars <= maxStars);
-            
-            // Sort
-            const sortBy = document.getElementById('sortBy').value;
-            if (sortBy === 'growth') {
-                filtered.sort((a, b) => (b.growth_score || 0) - (a.growth_score || 0));
-            } else if (sortBy === 'stars') {
-                filtered.sort((a, b) => b.stars - a.stars);
-            }
-            
-            // Render
-            const container = document.getElementById('reposContainer');
-            
-            if (filtered.length === 0) {
-                container.innerHTML = '<div class="loading">No repos found. Try adjusting filters!</div>';
+        function renderRepos(repos) {
+            if (!repos || repos.length === 0) {
+                document.getElementById('content').innerHTML = '<div class="loading">No repos found</div>';
                 return;
             }
-            
-            container.innerHTML = filtered.map(repo => `
-                <div class="repo-card" onclick="window.open('https://github.com/${repo.repo}', '_blank')">
-                    <div class="repo-header">
-                        <a href="https://github.com/${repo.repo}" target="_blank" class="repo-name">
-                            ${repo.repo}
-                        </a>
-                        <span class="language-badge ${repo.language?.toLowerCase()}">${repo.language || 'Unknown'}</span>
-                    </div>
-                    
-                    <div class="repo-description">
-                        ${repo.description || 'No description available'}
-                    </div>
-                    
-                    <div class="repo-stats">
-                        <div class="stat">⭐ ${repo.stars.toLocaleString()} stars</div>
-                        <div class="stat">📈 ${(repo.stars_per_month || 0).toFixed(0)} stars/month</div>
-                        <div class="stat">🚀 ${(repo.growth_score || 0).toFixed(0)} score</div>
-                    </div>
-                    
-                    <div class="influencer">
-                        🎭 Starred by @${repo.influencer || 'influencer'} (${(repo.influencer_followers || 0).toLocaleString()} followers)
-                    </div>
-                    
-                    <div class="pitch">
-                        💡 ${repo.sales_pitch || 'High-growth potential project!'}
-                    </div>
-                </div>
-            `).join('');
+
+            // Split into two lists: < 2500 stars and 2500-10000 stars
+            const under2500 = repos.filter(r => (r.stars || 0) < 2500);
+            const under10000 = repos.filter(r => (r.stars || 0) >= 2500 && (r.stars || 0) <= 10000);
+
+            const html = `
+                ${renderSection('🌱 Emerging (Under 2.5k stars)', under2500)}
+            `;
+
+            document.getElementById('content').innerHTML = html;
         }
 
-        // Event listeners
-        document.getElementById('applyFilters').addEventListener('click', renderRepos);
-        document.getElementById('sortBy').addEventListener('change', renderRepos);
-        
-        // Initialize
+        function renderSection(title, repos) {
+            if (!repos || repos.length === 0) {
+                return `
+                    <div class="section-title">${title}</div>
+                    <div class="loading">No repos in this range</div>
+                `;
+            }
+
+            return `
+                <div class="section-title">${title} <span>(${repos.length} repos)</span></div>
+                <div class="repos-grid">
+                    ${repos.map(repo => renderCard(repo)).join('')}
+                </div>
+            `;
+        }
+
+        function renderCard(repo) {
+            const repoName = repo.repo || `${repo.owner}/${repo.name}`;
+            const language = repo.language || 'Unknown';
+            const stars = repo.stars || 0;
+            const growth = repo.growth_score || repo.stars_per_month || 0;
+            const desc = repo.description || 'No description';
+            const influencer = repo.influencer || 'influencer';
+            const influencerFollowers = repo.influencer_followers || 0;
+
+            return `
+                <div class="repo-card" onclick="window.open('https://github.com/${repoName}', '_blank')">
+                    <div class="repo-name">${repoName}</div>
+                    <div class="repo-meta">
+                        <span class="language lang-${language}">${language}</span>
+                        <span class="stars">⭐ ${stars.toLocaleString()}</span>
+                        <span class="growth">📈 ${growth.toFixed(0)}/mo</span>
+                    </div>
+                    <div class="repo-desc">${desc.length > 100 ? desc.substring(0, 100) + '...' : desc}</div>
+                    <div class="influencer">
+                        🎭 Starred by @${influencer} (${influencerFollowers.toLocaleString()} followers)
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load repos on page load
         fetchRepos();
-        
-        // Refresh every 5 minutes
-        setInterval(fetchRepos, 5 * 60 * 1000);
     </script>
 </body>
 </html>
