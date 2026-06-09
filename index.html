@@ -23,7 +23,6 @@
             margin: 0 auto;
         }
 
-        /* Header */
         .header {
             text-align: center;
             padding: 40px 20px;
@@ -41,10 +40,37 @@
             color: #aaa;
         }
 
-        /* Section Titles */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .tab {
+            padding: 12px 30px;
+            background: #1e1e2e;
+            border: 1px solid #333;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            background: #2a2a3a;
+        }
+
+        .tab.active {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            color: white;
+        }
+
         .section-title {
-            font-size: 1.5rem;
-            margin: 30px 0 20px;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 2px solid #333;
         }
@@ -53,7 +79,6 @@
             color: #4CAF50;
         }
 
-        /* Repo Cards */
         .repos-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -87,6 +112,7 @@
             gap: 15px;
             margin-bottom: 10px;
             font-size: 0.8rem;
+            flex-wrap: wrap;
         }
 
         .language {
@@ -103,13 +129,8 @@
         .lang-Rust { background: #DEA584; }
         .lang-Unknown { background: #555; }
 
-        .stars {
-            color: #FFD700;
-        }
-
-        .growth {
-            color: #4CAF50;
-        }
+        .stars { color: #FFD700; }
+        .growth { color: #4CAF50; }
 
         .repo-desc {
             color: #aaa;
@@ -142,6 +163,16 @@
             color: #666;
             font-size: 0.8rem;
         }
+
+        @media (max-width: 768px) {
+            .repos-grid {
+                grid-template-columns: 1fr;
+            }
+            .tab {
+                padding: 8px 20px;
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -151,8 +182,13 @@
             <p>Fast-growing open-source projects tracked by influencers</p>
         </div>
 
-        <div id="content">
-            <div class="loading">Loading...</div>
+        <div class="tabs">
+            <div class="tab active" data-url="/repos/under-2500">🌱 Under 2.5k stars</div>
+            <div class="tab" data-url="/repos/under-10000">📈 Under 10k stars</div>
+        </div>
+
+        <div id="reposContainer">
+            <div class="loading">Loading repos under 2.5k stars...</div>
         </div>
 
         <div class="footer">
@@ -161,65 +197,51 @@
     </div>
 
     <script>
-        // API endpoints
         const API_URL = 'https://emerging-repos-api.onrender.com';
 
-        async function fetchRepos() {
+        async function fetchRepos(url) {
+            document.getElementById('reposContainer').innerHTML = '<div class="loading">Loading...</div>';
+            
             try {
-                // Fetch top 100 repos with stars < 2500
-                const response = await fetch(`${API_URL}/repos/trending?limit=100&max_stars=2500`);
+                const response = await fetch(`${API_URL}${url}`);
                 
                 if (!response.ok) {
-                    throw new Error(`API returned ${response.status}`);
+                    throw new Error(`HTTP ${response.status}`);
                 }
                 
                 const data = await response.json();
-                const repos = data.repos || data;
-                
-                renderRepos(repos);
+                displayRepos(data);
                 
             } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('content').innerHTML = `
+                document.getElementById('reposContainer').innerHTML = `
                     <div class="error">
-                        ⚠️ Failed to load data. Make sure the API is running.<br>
-                        <small>${error.message}</small>
+                        ❌ Error: ${error.message}<br>
+                        <small>Make sure API is running at ${API_URL}</small>
                     </div>
                 `;
             }
         }
 
-        function renderRepos(repos) {
-            if (!repos || repos.length === 0) {
-                document.getElementById('content').innerHTML = '<div class="loading">No repos found</div>';
+        function displayRepos(data) {
+            const repos = data.repos || [];
+            const category = data.category || 'Repos';
+            
+            if (repos.length === 0) {
+                document.getElementById('reposContainer').innerHTML = `
+                    <div class="section-title">${category} <span>(0 repos)</span></div>
+                    <div class="loading">No repos found</div>
+                `;
                 return;
             }
 
-            // Split into two lists: < 2500 stars and 2500-10000 stars
-            const under2500 = repos.filter(r => (r.stars || 0) < 2500);
-            const under10000 = repos.filter(r => (r.stars || 0) >= 2500 && (r.stars || 0) <= 10000);
-
             const html = `
-                ${renderSection('🌱 Emerging (Under 2.5k stars)', under2500)}
-            `;
-
-            document.getElementById('content').innerHTML = html;
-        }
-
-        function renderSection(title, repos) {
-            if (!repos || repos.length === 0) {
-                return `
-                    <div class="section-title">${title}</div>
-                    <div class="loading">No repos in this range</div>
-                `;
-            }
-
-            return `
-                <div class="section-title">${title} <span>(${repos.length} repos)</span></div>
+                <div class="section-title">${category} <span>(${repos.length} repos)</span></div>
                 <div class="repos-grid">
                     ${repos.map(repo => renderCard(repo)).join('')}
                 </div>
             `;
+            
+            document.getElementById('reposContainer').innerHTML = html;
         }
 
         function renderCard(repo) {
@@ -247,8 +269,23 @@
             `;
         }
 
-        // Load repos on page load
-        fetchRepos();
+        // Tab click handlers
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Update active tab styling
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Get the URL for this tab
+                const url = tab.getAttribute('data-url');
+                
+                // Fetch repos for this tab
+                fetchRepos(url);
+            });
+        });
+
+        // Load default tab (under-2500)
+        fetchRepos('/repos/under-2500');
     </script>
 </body>
 </html>
