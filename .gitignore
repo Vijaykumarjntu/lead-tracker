@@ -6,6 +6,6 @@ star_history.db
 *.md
 
 # EXCEPT these specific ones (whitelist)
-!emerging_leads_10000.json
-!emerging_leads_new.json 
+!emerging_leads3_10000_with_languages.json
+!emerging_leads_new_with_languages.json 
 !emerging_leads.json 
