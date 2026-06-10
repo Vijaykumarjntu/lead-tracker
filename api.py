@@ -25,9 +25,13 @@ def load_repos(x):
         if x==2500:
             with open('emerging_leads_new_with_languages.json', 'r', encoding='utf-8') as f:
                 return json.load(f)
-        else:
+        elif x==10000:
             with open('emerging_leads3_10000_with_languages.json', 'r', encoding='utf-8') as f:
                 return json.load(f)
+        else:
+            with open('emerging_leads_25000_with_languages.json', 'r', encoding='utf-8') as f:
+                return json.load(f)
+
     except:
         try:
             with open('emerging_leads.json', 'r', encoding='utf-8') as f:
@@ -77,6 +81,22 @@ def get_under_10000():
         "category": "Under 10k stars",
         "count": len(repos),
         "repos": repos 
+    }
+
+@app.get("/repos/under-25000")
+def get_under_2500():
+    """Get repos with less than 2,500 stars"""
+    repos = load_repos(25000)
+    
+    # Filter: stars < 2500
+    # filtered = [r for r in repos if r.get('stars', 0) < 2500]
+    
+    # Sort by growth score
+    repos.sort(key=lambda x: x.get('growth_score', 0), reverse=True)
+    return {
+        "category": "Under 2.5k stars",
+        "count": len(repos),
+        "repos": repos
     }
 
 if __name__ == "__main__":

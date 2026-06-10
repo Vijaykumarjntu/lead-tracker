@@ -37,7 +37,7 @@ def add_languages_to_leads():
     # print("✅ Backup saved as: emerging_leads_backup.json")
     
     # 2. Load original
-    with open('emerging_leads_new.json', 'r') as f:
+    with open('emerging_leads_25000.json', 'r') as f:
         leads = json.load(f)
     
     print(f"\n📊 Loaded {len(leads)} leads")
@@ -73,7 +73,7 @@ def add_languages_to_leads():
         time.sleep(0.3)  # Rate limiting
     
     # 4. Save to NEW file
-    new_filename = f'emerging_leads_new_with_languages.json'
+    new_filename = f'emerging_leads_25000_with_languages.json'
     with open(new_filename, 'w') as f:
         json.dump(enriched_leads, f, indent=2)
     

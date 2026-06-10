@@ -17,8 +17,8 @@ HEADERS = {
 }
 
 # Thresholds
-MAX_STARS = 10000  # Don't want repos this big
-MIN_STARS = 2500    # Need some traction
+MAX_STARS = 25000  # Don't want repos this big
+MIN_STARS = 10000    # Need some traction
 GROWTH_WINDOW_MONTHS = 6  # Look at growth over last 6 months
 
 def get_recent_stars(username: str, limit: int = 20) -> List[Dict]:
@@ -295,7 +295,7 @@ def main():
         return
     
     # Generate report
-    leads = generate_emerging_report(emerging, "emerging_leads_10000.json")
+    leads = generate_emerging_report(emerging, "emerging_leads_25000.json")
     
     print("\n🎯 Ready to reach out to owners of GROWING projects!")
 
