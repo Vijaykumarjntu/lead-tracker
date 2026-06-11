@@ -17,8 +17,8 @@ HEADERS = {
 }
 
 # Thresholds
-MAX_STARS = 25000  # Don't want repos this big
-MIN_STARS = 10000    # Need some traction
+MAX_STARS = 10000  # Don't want repos this big
+MIN_STARS = 2500    # Need some traction
 GROWTH_WINDOW_MONTHS = 6  # Look at growth over last 6 months
 
 def get_recent_stars(username: str, limit: int = 20) -> List[Dict]:
@@ -152,7 +152,7 @@ def find_emerging_repos(influencers_file: str, target_count: int = 100):
     repo_candidates = {}
     influencers_processed = 0
 
-    for idx, influencer in enumerate(influencers[:125], 1):  # Start with 50 influencers
+    for idx, influencer in enumerate(influencers[:240], 1):  # Start with 50 influencers
         username = influencer['username']
         print(f"\n{idx}/{len(influencers[:540])} 👤 @{username} (Followers: {influencer['followers']})")
         influencers_processed += 1
@@ -288,14 +288,14 @@ def main():
     print()
     
     # Find emerging repos
-    emerging = find_emerging_repos("influencers2.json", target_count=125)
+    emerging = find_emerging_repos("influencers1.json", target_count=125)
     
     if not emerging:
         print("❌ No emerging repos found! Try adjusting thresholds.")
         return
     
     # Generate report
-    leads = generate_emerging_report(emerging, "emerging_leads_25000.json")
+    leads = generate_emerging_report(emerging, "emerging_leads_10000.json")
     
     print("\n🎯 Ready to reach out to owners of GROWING projects!")
 
