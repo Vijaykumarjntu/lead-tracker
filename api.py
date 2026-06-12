@@ -23,13 +23,13 @@ def load_repos(x):
     """Load repos from JSON file"""
     try:
         if x==2500:
-            with open('emerging_leads_new_with_languages.json', 'r', encoding='utf-8') as f:
+            with open('emerging_leads_new_batch_with_languages.json', 'r', encoding='utf-8') as f:
                 return json.load(f)
         elif x==10000:
-            with open('emerging_leads3_10000_with_languages.json', 'r', encoding='utf-8') as f:
+            with open('emerging_leads_batch_10000_with_languages.json', 'r', encoding='utf-8') as f:
                 return json.load(f)
         else:
-            with open('emerging_leads_25000_with_languages.json', 'r', encoding='utf-8') as f:
+            with open('emerging_leads_batch_25000_with_languages.json', 'r', encoding='utf-8') as f:
                 return json.load(f)
 
     except:

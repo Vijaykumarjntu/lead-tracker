@@ -17,32 +17,34 @@ HEADERS = {
 }
 
 # Thresholds
-MAX_STARS = 2500
-MIN_STARS = 100
+MAX_STARS = 25000
+MIN_STARS = 10000
 GROWTH_WINDOW_MONTHS = 6
 
 # Checkpoint file
 CHECKPOINT_FILE = 'tracking_checkpoint.json'
 
 def load_checkpoint():
-    """Load last processed influencer index"""
+    """Load last processed influencer index AND accumulated repos"""
     if os.path.exists(CHECKPOINT_FILE):
         with open(CHECKPOINT_FILE, 'r') as f:
             checkpoint = json.load(f)
             print(f"✅ Resuming from influencer #{checkpoint['last_index'] + 1}")
+            print(f"📦 Already have {len(checkpoint.get('accumulated_repos', []))} repos")
             return checkpoint
-    return {'last_index': -1, 'processed_repos': []}
+    return {'last_index': -1, 'processed_repos': [], 'accumulated_repos': []}
 
-def save_checkpoint(last_index, processed_repos):
-    """Save current progress"""
+def save_checkpoint(last_index, processed_repos, accumulated_repos):
+    """Save current progress with accumulated repos"""
     checkpoint = {
         'last_index': last_index,
         'processed_repos': processed_repos,
+        'accumulated_repos': accumulated_repos,
         'last_updated': datetime.now().isoformat()
     }
     with open(CHECKPOINT_FILE, 'w') as f:
         json.dump(checkpoint, f, indent=2)
-    print(f"💾 Checkpoint saved at influencer #{last_index + 1}")
+    print(f"💾 Checkpoint saved at influencer #{last_index + 1} with {len(accumulated_repos)} repos")
 
 def get_recent_stars(username: str, limit: int = 20) -> List[Dict]:
     """Get last N repos starred by a user"""
@@ -118,17 +120,24 @@ def find_emerging_repos(influencers_file: str, target_count: int = 100, batch_si
     start_index = checkpoint['last_index'] + 1
     processed_repos = set(checkpoint['processed_repos'])
     
-    print(f"🚀 Scanning {len(influencers)} influencers for EMERGING repos...")
+    # Load previously accumulated repos
+    accumulated_repos = checkpoint.get('accumulated_repos', [])
+    repo_candidates = {r['repo']: r for r in accumulated_repos}  # Start with existing repos
+    
+    total_influencers = len(influencers)
+    
+    print(f"🚀 Scanning {total_influencers} influencers for EMERGING repos...")
     print(f"🎯 Target: Repos with <{MAX_STARS} stars but high growth")
     print(f"📌 Resuming from influencer #{start_index + 1}")
+    print(f"📦 Already have {len(repo_candidates)} repos accumulated")
     print("=" * 80)
     
-    repo_candidates = {}
-    # total_influencers = len(influencers[:240])  # Your limit
-    total_influencers = len(influencers)  # Your limit
     failed_at = None
-    
-    for idx in range(start_index, min(start_index + batch_size, total_influencers)):
+    # Calculate how many to process in THIS run
+    end_index = min(start_index + batch_size, total_influencers)
+    print(f"start index is {start_index}")
+    print(f"end index is {end_index}")
+    for idx in range(start_index, end_index):
         influencer = influencers[idx]
         username = influencer['username']
         
@@ -155,7 +164,6 @@ def find_emerging_repos(influencers_file: str, target_count: int = 100, batch_si
                 continue
             
             # Get detailed info for each eligible repo
-            repos_with_growth = []
             for repo in eligible_repos:
                 repo_full_name = repo['full_name']
                 
@@ -181,14 +189,13 @@ def find_emerging_repos(influencers_file: str, target_count: int = 100, batch_si
                 
                 repo_candidates[repo_full_name] = repo_data
                 processed_repos.add(repo_full_name)
-                repos_with_growth.append(repo_data)
                 
-                print(f"   📈 {repo_full_name} - {details['stars']} stars | "
+                print(f"   📈 +{repo_full_name} - {details['stars']} stars | "
                       f"{details['stars_per_month']:.1f} stars/month | "
                       f"Growth Score: {growth_score:.2f}")
             
-            # SAVE CHECKPOINT after each successful influencer
-            save_checkpoint(idx, list(processed_repos))
+            # SAVE CHECKPOINT after each successful influencer (with accumulated repos)
+            save_checkpoint(idx, list(processed_repos), list(repo_candidates.values()))
             time.sleep(0.5)
             
         except Exception as e:
@@ -196,8 +203,8 @@ def find_emerging_repos(influencers_file: str, target_count: int = 100, batch_si
             failed_at = idx
             break
     
-    print(f"\n📊 Processed {idx + 1 if not failed_at else failed_at} influencers")
-    print(f"📦 Found {len(repo_candidates)} unique repos")
+    print(f"\n📊 Processed up to influencer #{end_index if not failed_at else failed_at + 1}")
+    print(f"📦 Total unique repos accumulated: {len(repo_candidates)}")
     
     if failed_at is not None:
         print(f"\n⚠️ Stopped at influencer #{failed_at + 1}")
@@ -208,17 +215,25 @@ def find_emerging_repos(influencers_file: str, target_count: int = 100, batch_si
     all_repos = list(repo_candidates.values())
     all_repos.sort(key=lambda x: x['growth_score'], reverse=True)
     
-    top_emerging = all_repos[:target_count]
-    
-    # Clear checkpoint on successful completion
-    if os.path.exists(CHECKPOINT_FILE):
-        os.remove(CHECKPOINT_FILE)
-        print("✅ Checkpoint cleared (batch complete)")
-    
-    return top_emerging
+    # ONLY delete checkpoint and return final repos if we've processed ALL influencers
+    if end_index >= total_influencers:
+        top_emerging = all_repos[:target_count]
+        if os.path.exists(CHECKPOINT_FILE):
+            os.remove(CHECKPOINT_FILE)
+            print("✅ All influencers processed! Checkpoint cleared.")
+        return top_emerging
+    else:
+        print(f"✅ Batch complete. Processed {end_index}/{total_influencers} influencers.")
+        print(f"📦 Total repos so far: {len(all_repos)}")
+        print(f"💡 Run script again to process next {batch_size} influencers.")
+        return None
 
 def generate_emerging_report(emerging_repos: List[Dict], output_file: str = 'emerging_leads_new.json'):
     """Generate report with sales pitches for emerging repos"""
+    
+    if not emerging_repos:
+        print("❌ No repos to generate report!")
+        return []
     
     print("\n" + "=" * 80)
     print(f"🏆 TOP {len(emerging_repos)} EMERGING REPOSITORIES")
@@ -274,27 +289,24 @@ def generate_emerging_report(emerging_repos: List[Dict], output_file: str = 'eme
     return leads
 
 def main():
-    print("🚀 GitHub EMERGING Repo Tracker (WITH CHECKPOINT RESUME)")
+    print("🚀 GitHub EMERGING Repo Tracker (ACCUMULATE MODE)")
     print("=" * 80)
     print(f"🎯 Finding repos with <{MAX_STARS} stars but HIGH GROWTH")
     print(f"📊 Looking at last {GROWTH_WINDOW_MONTHS} months of activity")
     print()
     
-    # Find emerging repos with checkpoint
-    emerging = find_emerging_repos("influencers.json", target_count=125, batch_size=50)
-    
-    if emerging is None:
-        print("\n⚠️ Batch incomplete. Run script again to resume from checkpoint.")
-        return
-    
-    if not emerging:
-        print("❌ No emerging repos found! Try adjusting thresholds.")
-        return
-    
-    # Generate report
-    leads = generate_emerging_report(emerging, "emerging_leads_new_batch.json")
-    
-    print("\n🎯 Ready to reach out to owners of GROWING projects!")
+    # Keep running until all influencers are processed
+    while True:
+        emerging = find_emerging_repos("influencers.json", target_count=100, batch_size=50)
+        
+        if emerging is not None:
+            # All done! Generate final report
+            generate_emerging_report(emerging, "emerging_leads_batch_25000.json")
+            print("\n🎯 Ready to reach out to owners of GROWING projects!")
+            break
+        else:
+            print("\n⚠️ Batch complete. Run again to continue accumulating...")
+            input("Press Enter to continue or Ctrl+C to stop...")
 
 if __name__ == "__main__":
     main()
